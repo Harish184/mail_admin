@@ -19,24 +19,13 @@ void main()  {
   try{
     print("inside try of callbackDispatcher");
     Workmanager().executeTask((task, inputData) async {
+      print("inputData $inputData");
       await sendErrorEmail();
       return true;
-      // print("inputData $inputData");
-      // if (task == 'sendErrorEmailTask') {
-      //   final scheduledTime = inputData!['scheduledTime'];
-      //   final now = DateTime.now();
-      //   final scheduledDate = DateTime(now.year, now.month, now.day, int.parse(scheduledTime.split(':')[0]), int.parse(scheduledTime.split(':')[1]));
-      //   if (now.isBefore(scheduledDate)) {
-      //     return Future.value(false);
-      //   }
-      //   sendErrorEmail();
-      // }
-      // return Future.value(true);
     });
   } catch(e){
     print(e);
   }
-
 }
 
 Future<void> sendErrorEmail() async {
@@ -44,6 +33,7 @@ Future<void> sendErrorEmail() async {
   try{
     final errorTransactions = await DatabaseHelper.instance.getErrorTransactions();
     if (errorTransactions.isNotEmpty) {
+      print("not Empty");
       final mailOptions = MailOptions(
         body: 'The following transactions have errors: ${errorTransactions.toString()}',
         subject: 'Error Transactions Report',

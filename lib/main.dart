@@ -16,6 +16,12 @@ void main()  {
 
  void callbackDispatcher() {
   print("callbackDispatcher");
+  Workmanager().registerPeriodicTask(
+    "sendErrorEmailTask",
+    "sendErrorEmail",
+    frequency: Duration(minutes: 5),
+    initialDelay: Duration(minutes: 1),
+  );
   try{
     print("inside try of callbackDispatcher");
     Workmanager().executeTask((task, inputData) async {
@@ -39,7 +45,7 @@ Future<void> sendErrorEmail() async {
         subject: 'Error Transactions Report',
         recipients: ['harishyogan123@gmail.com'],
       );
-      print(mailOptions);
+      print(mailOptions.body);
       await FlutterMailer.send(mailOptions);
     }else{
       print("empty");
@@ -60,12 +66,6 @@ class _MyAppState extends State<MyApp> {
     // TODO: implement initState
     super.initState();
     callQuery();
-    Workmanager().registerPeriodicTask(
-      "sendErrorEmail",
-      "sendErrorEmailTask",
-      frequency: Duration(minutes: 15),
-      initialDelay: Duration(minutes: 5),
-    );
   }
 
   callQuery() async {

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_mailer/flutter_mailer.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:workmanager/workmanager.dart';
 import 'database.dart';
 
@@ -8,25 +8,34 @@ void main()  {
   WidgetsFlutterBinding.ensureInitialized();
   Workmanager().initialize(
     callbackDispatcher,
-    isInDebugMode: true,
+    isInDebugMode: false,
   );
 
   runApp( MyApp());
 }
 
+void scheduleTask(){
+  Workmanager().registerPeriodicTask(
+    "sendEmail",
+    "sendErrorEmailTask",
+    inputData: {
+      'table': 'transaction_table',
+      'error': true,
+    },
+    frequency: Duration(minutes: 15),
+    initialDelay: Duration(minutes: 5),
+  );
+}
+
  void callbackDispatcher() {
   print("callbackDispatcher");
-  Workmanager().registerPeriodicTask(
-    "sendErrorEmailTask",
-    "sendErrorEmail",
-    frequency: Duration(minutes: 5),
-    initialDelay: Duration(minutes: 1),
-  );
+
   try{
     print("inside try of callbackDispatcher");
     Workmanager().executeTask((task, inputData) async {
-      print("inputData $inputData");
-      await sendErrorEmail();
+      String table = inputData!['table'];
+      bool hasError = inputData['error'];
+      await sendEmail();
       return true;
     });
   } catch(e){
@@ -34,19 +43,24 @@ void main()  {
   }
 }
 
-Future<void> sendErrorEmail() async {
+Future<void> sendEmail() async {
   print("here");
   try{
     final errorTransactions = await DatabaseHelper.instance.getErrorTransactions();
     if (errorTransactions.isNotEmpty) {
       print("not Empty");
-      final mailOptions = MailOptions(
-        body: 'The following transactions have errors: ${errorTransactions.toString()}',
-        subject: 'Error Transactions Report',
+      final Email email = Email(
+        body: 'Hello, Admin!\n\nThere are error records in the transaction table are ${errorTransactions.toString()}.',
+        subject: 'Error Records in Transaction Table',
         recipients: ['harishyogan123@gmail.com'],
+        isHTML: false,
       );
-      print(mailOptions.body);
-      await FlutterMailer.send(mailOptions);
+      try{
+        await FlutterEmailSender.send(email);
+      } catch(e){
+        print(e);
+      }
+
     }else{
       print("empty");
     }
@@ -66,6 +80,7 @@ class _MyAppState extends State<MyApp> {
     // TODO: implement initState
     super.initState();
     callQuery();
+    scheduleTask();
   }
 
   callQuery() async {
@@ -79,7 +94,10 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'My App',
       home: Scaffold(
-        body: Container(),
+        appBar: AppBar(title: Text('Daily Mailer'),),
+        body: Container(
+          child: Center(child: Text("Mail Admin Component"),),
+        ),
       ),
     );
   }

@@ -36,7 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   sqflite: ^2.2.6
-  flutter_mailer: ^2.0.2
+  flutter_email_sender: ^5.2.0
   workmanager: ^0.5.1
   path_provider: ^2.0.14
 
